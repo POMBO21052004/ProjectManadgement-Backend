@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Code OTP TodoApp</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f6f7fb; padding: 24px; }
+        .card {
+            max-width: 520px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        }
+        .title { color: #0f172a; font-size: 22px; margin-bottom: 12px; }
+        .otp {
+            display: inline-block;
+            font-size: 28px;
+            letter-spacing: 8px;
+            background: #eef2ff;
+            color: #4c1d95;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+        .meta { color: #475569; line-height: 1.6; }
+        .footer { margin-top: 32px; font-size: 12px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <p class="title">Bonjour {{ user.username }},</p>
+        <p class="meta">
+            Voici votre code de vérification pour accéder à TodoApp.
+        </p>
+        <div class="otp">{{ otp_code }}</div>
+        <p class="meta">
+            Ce code est valable pendant <strong>{{ otp_expiry }} minutes</strong>.<br>
+            Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.
+        </p>
+        <p class="footer">
+            — L'équipe TodoApp
+        </p>
+    </div>
+</body>
+</html>
+
