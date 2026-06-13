@@ -84,18 +84,38 @@ def login_view(request):
             'error': 'Email ou mot de passe incorrect.'
         }, status=status.HTTP_401_UNAUTHORIZED)
     
-    # Envoyer l'OTP
-    try:
-        otp_code = send_otp_email(user)
+    # Vérifier s'il faut demander l'OTP
+    requires_otp = False
+    if not user.is_verified:
+        requires_otp = True
+    elif (timezone.now() - user.updated_at).days >= 3:
+        requires_otp = True
+
+    if requires_otp:
+        # Envoyer l'OTP
+        try:
+            otp_code = send_otp_email(user)
+            return Response({
+                'message': 'Code OTP envoyé à votre email.',
+                'email': user.email,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'error': 'Erreur lors de l\'envoi du code OTP.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        # Bypass OTP (déjà vérifié et connexion récente)
+        user.save()  # Met à jour updated_at
+        refresh = RefreshToken.for_user(user)
         return Response({
-            'message': 'Code OTP envoyé à votre email.',
-            'email': user.email,
-            # 'otp_code': otp_code  # À retirer en production
+            'message': 'Connexion réussie.',
+            'user': UserSerializer(user).data,
+            'token': str(refresh.access_token),
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
         }, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({
-            'error': 'Erreur lors de l\'envoi du code OTP.'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @extend_schema(tags=['Auth'])
@@ -138,10 +158,10 @@ def verify_otp_view(request):
     otp.is_used = True
     otp.save()
     
-    # Marquer l'utilisateur comme vérifié
+    # Marquer l'utilisateur comme vérifié et mettre à jour la date de dernière connexion (updated_at)
     if not user.is_verified:
         user.is_verified = True
-        user.save()
+    user.save()
     
     # Générer les tokens JWT
     refresh = RefreshToken.for_user(user)
