@@ -1,5 +1,6 @@
 from rest_framework import status, generics, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -20,6 +21,7 @@ from .utils import send_otp_email
 User = get_user_model()
 
 
+@extend_schema(tags=['Auth'])
 class RegisterView(generics.CreateAPIView):
     """
     Inscription d'un nouvel utilisateur
@@ -53,6 +55,7 @@ class RegisterView(generics.CreateAPIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(tags=['Auth'])
 @api_view(['POST', 'GET'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -95,6 +98,7 @@ def login_view(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(tags=['Auth'])
 @api_view(['POST', 'GET'])
 @permission_classes([AllowAny])
 def verify_otp_view(request):
@@ -153,6 +157,7 @@ def verify_otp_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=['Auth'])
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def resend_otp_view(request):
@@ -187,6 +192,7 @@ def resend_otp_view(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(tags=['Auth'])
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_profile_view(request):
@@ -197,6 +203,7 @@ def get_profile_view(request):
     return Response(serializer.data)
 
 
+@extend_schema(tags=['Auth'])
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def update_profile_view(request):
@@ -220,6 +227,7 @@ def update_profile_view(request):
 # GESTION DES UTILISATEURS PAR L'ADMIN
 # ============================================
 
+@extend_schema(tags=['Users (Admin)'])
 class AdminUserViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour que l'admin gère tous les utilisateurs

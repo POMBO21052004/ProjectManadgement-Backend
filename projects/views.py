@@ -4,6 +4,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from django.conf import settings
@@ -50,6 +51,7 @@ def send_task_assignment_email(task):
         logger.warning("Impossible d'envoyer l'email d'assignation pour la tÃ¢che %s", task.id, exc_info=exc)
 
 
+@extend_schema(tags=['Projects'])
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gÃ©rer les projets (GLOBAL - pas assignÃ© aux utilisateurs)
@@ -165,6 +167,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(stats)
 
 
+@extend_schema(tags=['Tasks'])
 class TaskViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gÃ©rer les tÃ¢ches
@@ -377,6 +380,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             'users': list(users)
         })
 
+@extend_schema(tags=['Tasks'])
 class ResourceViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gÃ©rer les ressources attachÃ©es aux tÃ¢ches
@@ -395,6 +399,7 @@ class ResourceViewSet(viewsets.ModelViewSet):
         return Resource.objects.filter(task__user=user)
 
 
+@extend_schema(tags=['Clients'])
 class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
     permission_classes = [IsAuthenticated]
@@ -412,6 +417,7 @@ from rest_framework.response import Response
 from .models import Comment, Notification, SubTask, TaskDependency
 from .serializers import CommentSerializer, NotificationSerializer, SubTaskSerializer, TaskDependencySerializer
 
+@extend_schema(tags=['Tasks'])
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -434,6 +440,7 @@ class CommentViewSet(viewsets.ModelViewSet):
                 link=f'/admin/tasks/{comment.task.id}'
             )
 
+@extend_schema(tags=['Notifications'])
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -453,6 +460,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         self.get_queryset().update(is_read=True)
         return Response({'status': 'ok'})
 
+@extend_schema(tags=['Tasks'])
 class SubTaskViewSet(viewsets.ModelViewSet):
     serializer_class = SubTaskSerializer
     permission_classes = [IsAuthenticated]
@@ -470,6 +478,7 @@ class SubTaskViewSet(viewsets.ModelViewSet):
         subtask.save()
         return Response(self.get_serializer(subtask).data)
 
+@extend_schema(tags=['Tasks'])
 class TaskDependencyViewSet(viewsets.ModelViewSet):
     serializer_class = TaskDependencySerializer
     permission_classes = [IsAuthenticated]
@@ -480,9 +489,15 @@ class TaskDependencyViewSet(viewsets.ModelViewSet):
             return TaskDependency.objects.all()
         return TaskDependency.objects.filter(task__project__tasks__user=user).distinct()
 
+@extend_schema(tags=['Search'])
 class SearchAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
+    @extend_schema(
+        operation_id='search_list',
+        description="Recherche globale projets + tâches",
+        tags=['Search']
+    )
     def get(self, request):
         query = request.query_params.get('q', '')
         user = request.user

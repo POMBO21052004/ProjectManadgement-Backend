@@ -192,6 +192,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "https://localhost:5173",
     "https://management-tasks-ch6gzvqfx-albans-projects-a6430890.vercel.app",
+    "https://project-manadgement.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = False
